@@ -90,7 +90,8 @@ class _AddMachineryPageState extends State<AddMachineryPage> {
               title: 'Availability Calendar',
               child: AvailabilityCalendar(),
             ),
-            FormSection(
+            FormSection
+              (
               title: 'Additional Details',
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

@@ -21,7 +21,7 @@ class FormSection extends StatelessWidget {
       padding: const EdgeInsets.all(18.0),
       margin: const EdgeInsets.only(bottom: 18.0),
       decoration: BoxDecoration(
-        color: AppColors.lightGray,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(18.0),
         border: Border.all(color: AppColors.lightGray, width: 1.5),
       ),

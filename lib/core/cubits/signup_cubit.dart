@@ -70,7 +70,7 @@ class SignupCubit extends Cubit<SignupState> {
     ));
   }
 
-  Future<void> signUp() async {
+  Future<void> signUp(Function onProfileCompletion) async {
     if (!state.status.isValidated) return;
     emit(state.copyWith(status: FormStatus.submissionInProgress));
     try {
@@ -79,7 +79,9 @@ class SignupCubit extends Cubit<SignupState> {
         password: state.password.value,
         name: state.name.value,
       );
+      // No need to call signIn here, session is already active after signup
       emit(state.copyWith(status: FormStatus.submissionSuccess));
+      onProfileCompletion();
     } catch (error) {
       emit(state.copyWith(
         status: FormStatus.submissionFailure,

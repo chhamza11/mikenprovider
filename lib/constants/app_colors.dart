@@ -13,4 +13,5 @@ class AppColors {
   static const Color surface = Color(0xFF2C2C2C);     // A slightly lighter dark color for surfaces like text fields
   static const Color mediumGray = Color(0xFF525353);  // For borders, dividers
   static const Color lightGray = Color(0xFF7A7A7A);   // For hint text, icons, and less important text
+   // For hint text, icons, and less important text
 }

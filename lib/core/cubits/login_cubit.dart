@@ -60,12 +60,15 @@ class LoginCubit extends Cubit<LoginState> {
     if (!state.status.isValidated) return;
     emit(state.copyWith(status: FormStatus.submissionInProgress));
     try {
-      await _authRepository.signIn(
+      print('🔄 Attempting login with email: ${state.email.value}');
+      final session = await _authRepository.signIn(
         email: state.email.value,
         password: state.password.value,
       );
+      print('✅ Login successful, session ID: ${session.$id}');
       emit(state.copyWith(status: FormStatus.submissionSuccess));
     } catch (error) {
+      print('❌ Login failed: $error');
       emit(state.copyWith(
         status: FormStatus.submissionFailure,
         errorMessage: error.toString(),

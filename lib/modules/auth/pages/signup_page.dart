@@ -1,9 +1,13 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/cubits/signup_cubit.dart';
 import '../../../core/repositories/auth_repository.dart';
 // Import your custom colors file
 import '../../../constants/app_colors.dart';
+import '../../../core/config/appwrite_config.dart';
+import 'package:appwrite/appwrite.dart';
 
 class SignupPage extends StatelessWidget {
   const SignupPage({super.key});
@@ -25,6 +29,10 @@ class SignupPage extends StatelessWidget {
 class SignupForm extends StatelessWidget {
   const SignupForm({super.key});
 
+  void _navigateToProfileCompletion(BuildContext context) {
+    Navigator.of(context).pushReplacementNamed('/profile-completion');
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocListener<SignupCubit, SignupState>(
@@ -38,16 +46,6 @@ class SignupForm extends StatelessWidget {
                 backgroundColor: Colors.redAccent,
               ),
             );
-        } else if (state.status.isSubmissionSuccess) {
-          ScaffoldMessenger.of(context)
-            ..hideCurrentSnackBar()
-            ..showSnackBar(
-              const SnackBar(
-                content: Text('Account created successfully! Please sign in.'),
-                backgroundColor: Colors.green,
-              ),
-            );
-          Navigator.of(context).pop();
         }
       },
       child: Center(
@@ -90,7 +88,7 @@ class SignupForm extends StatelessWidget {
               const SizedBox(height: 16),
               _PasswordInput(),
               const SizedBox(height: 32),
-              _SignUpButton(),
+              _SignUpButton(onProfileCompletion: () => _navigateToProfileCompletion(context)),
               const SizedBox(height: 24),
               _LoginButton(),
               const SizedBox(height: 24),
@@ -219,6 +217,9 @@ class __PasswordInputState extends State<_PasswordInput> {
 }
 
 class _SignUpButton extends StatelessWidget {
+  final VoidCallback onProfileCompletion;
+  const _SignUpButton({required this.onProfileCompletion});
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<SignupCubit, SignupState>(
@@ -233,24 +234,22 @@ class _SignUpButton extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
             ),
           ),
-          // Corrected to use your original logic
           onPressed: state.status.isValidated
-              ? () => context.read<SignupCubit>().signUp()
+              ? () => context.read<SignupCubit>().signUp(onProfileCompletion)
               : null,
           child: state.status.isSubmissionInProgress
-          // Corrected to use your original logic
               ? const SizedBox(
-            height: 24,
-            width: 24,
-            child: CircularProgressIndicator(
-              strokeWidth: 3,
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-            ),
-          )
+                  height: 24,
+                  width: 24,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 3,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                )
               : const Text(
-            'Create Account',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
+                  'Create Account',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
         );
       },
     );
@@ -281,3 +280,6 @@ class _LoginButton extends StatelessWidget {
     );
   }
 }
+
+
+

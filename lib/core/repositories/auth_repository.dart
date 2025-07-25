@@ -71,6 +71,18 @@ class AuthRepository {
     required String password,
   }) async {
     try {
+      // First check if user is already authenticated
+      try {
+        final existingUser = await _account.get();
+        // User is already authenticated, get current session
+        final sessions = await _account.listSessions();
+        if (sessions.sessions.isNotEmpty) {
+          return sessions.sessions.first;
+        }
+      } catch (e) {
+        // User not authenticated, proceed with login
+      }
+      
       return await _account.createEmailPasswordSession(
         email: email,
         password: password,

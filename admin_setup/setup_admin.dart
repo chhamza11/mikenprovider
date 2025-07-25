@@ -6,7 +6,7 @@ import 'package:dart_appwrite/enums.dart';
 const String databaseId = '6880d58f002909acf5fa';
 
 void main() async {
-  const String endpoint = 'http://localhost/v1';
+  const String endpoint = 'https://fra.cloud.appwrite.io/v1';
   const String projectId = '6880d52c00174ed5ab46';
   final String? apiKey = Platform.environment['APPWRITE_API_KEY'];
 
@@ -16,7 +16,7 @@ void main() async {
   }
 
   stdout.writeln('🚀 Starting Appwrite database setup...');
-
+  
   try {
     final client = Client()
         .setEndpoint(endpoint)
@@ -26,6 +26,29 @@ void main() async {
 
     await createUserProviderCollection(databases);
     await createMachineryCollection(databases);
+
+    final storage = Storage(client);
+    try {
+      await storage.getBucket(bucketId: 'user-files');
+      print('Bucket already exists');
+    } catch (e) {
+      if (e.toString().contains('bucket_not_found')) {
+        await storage.createBucket(
+          bucketId: 'user-files',
+          name: 'User Files',
+          permissions: [
+            Permission.create(Role.users()),
+            Permission.read(Role.users()),
+            Permission.update(Role.users()),
+            Permission.delete(Role.users()),
+          ],
+          fileSecurity: false,
+        );
+        print('Bucket created');
+      } else {
+        rethrow;
+      }
+    }
 
     stdout.writeln('✅ Database setup completed successfully!');
   } catch (e) {
@@ -37,7 +60,7 @@ void main() async {
 Future<void> createUserProviderCollection(Databases databases) async {
   const String collectionId = 'userprovider';
   stdout.writeln('📦 Creating userprovider collection...');
-
+  
   try {
     await databases.createCollection(
       databaseId: databaseId,
@@ -80,7 +103,7 @@ Future<void> createUserProviderCollection(Databases databases) async {
 Future<void> createMachineryCollection(Databases databases) async {
   const String collectionId = 'machinery';
   stdout.writeln('📦 Creating machinery collection...');
-
+  
   try {
     await databases.createCollection(
       databaseId: databaseId,
@@ -126,34 +149,34 @@ Future<void> createAttribute(Databases databases, String collectionId, Map<Strin
   try {
     switch (attr['type']) {
       case 'string':
-        await databases.createStringAttribute(
-            databaseId: databaseId,
-            collectionId: collectionId,
+    await databases.createStringAttribute(
+      databaseId: databaseId,
+      collectionId: collectionId,
             key: key,
             size: attr['size'],
             xrequired: attr['required'],
             xdefault: attr['default']);
         break;
       case 'integer':
-        await databases.createIntegerAttribute(
-            databaseId: databaseId,
-            collectionId: collectionId,
+    await databases.createIntegerAttribute(
+      databaseId: databaseId,
+      collectionId: collectionId,
             key: key,
             xrequired: attr['required'],
             xdefault: attr['default']);
         break;
       case 'double':
-        await databases.createFloatAttribute(
-            databaseId: databaseId,
-            collectionId: collectionId,
+    await databases.createFloatAttribute(
+      databaseId: databaseId,
+      collectionId: collectionId,
             key: key,
             xrequired: attr['required'],
             xdefault: attr['default']);
         break;
       case 'boolean':
-        await databases.createBooleanAttribute(
-            databaseId: databaseId,
-            collectionId: collectionId,
+    await databases.createBooleanAttribute(
+      databaseId: databaseId,
+      collectionId: collectionId,
             key: key,
             xrequired: attr['required'],
             xdefault: attr['default']);

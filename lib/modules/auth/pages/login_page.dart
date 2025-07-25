@@ -35,6 +35,7 @@ class LoginForm extends StatelessWidget {
     return BlocListener<LoginCubit, LoginState>(
       listener: (context, state) {
         if (state.status.isSubmissionFailure) {
+          print('❌ LoginPage: Login failed - ${state.errorMessage}');
           ScaffoldMessenger.of(context)
             ..hideCurrentSnackBar()
             ..showSnackBar(
@@ -44,6 +45,7 @@ class LoginForm extends StatelessWidget {
               ),
             );
         } else if (state.status.isSubmissionSuccess) {
+          print('✅ LoginPage: Login successful, triggering AuthLoggedIn event');
           context.read<AuthBloc>().add(AuthLoggedIn());
         }
       },

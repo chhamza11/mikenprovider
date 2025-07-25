@@ -50,12 +50,18 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   }
 
   Future<void> _onAuthLoggedIn(AuthLoggedIn event, Emitter<AuthState> emit) async {
+    print('🔄 AuthBloc: Processing AuthLoggedIn event');
     try {
       final user = await _authRepository.getCurrentUser();
       if (user != null) {
+        print('✅ AuthBloc: User authenticated - ${user.name} (${user.email})');
         emit(AuthAuthenticated(user));
+      } else {
+        print('❌ AuthBloc: No user found, emitting AuthUnauthenticated');
+        emit(AuthUnauthenticated());
       }
     } catch (e) {
+      print('❌ AuthBloc: Error getting current user: $e');
       emit(AuthUnauthenticated());
     }
   }

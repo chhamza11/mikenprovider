@@ -6,6 +6,8 @@ import '../../../core/repositories/database_repository.dart';
 import '../../../core/models/owner_model.dart';
 import '../../../core/models/machinery_model.dart';
 import '../../../constants/app_colors.dart'; // Import your custom colors
+import '../../machinery/pages/add_machinery_page.dart';
+import '../widgets/bottom_navbar.dart';
 
 class HomePage extends StatefulWidget {
   final User user;
@@ -21,11 +23,20 @@ class _HomePageState extends State<HomePage> {
   OwnerModel? _ownerData;
   List<MachineryModel> _machineryList = [];
   bool _isLoading = true;
+  int _currentIndex = 0;
 
   @override
   void initState() {
     super.initState();
     _loadOwnerData();
+  }
+
+  void _onNavTap(int index) {
+    setState(() {
+      _currentIndex = index;
+    });
+    // For now, only Home (index 0) is implemented
+    // You can add navigation logic for other tabs here
   }
 
   Future<void> _loadOwnerData() async {
@@ -86,114 +97,137 @@ class _HomePageState extends State<HomePage> {
         onRefresh: _loadOwnerData,
         color: AppColors.primaryOrange,
         backgroundColor: AppColors.surface,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Welcome Card
+        child: _buildBody(),
+      ),
+      bottomNavigationBar: BottomNavbar(
+        currentIndex: _currentIndex,
+        onTap: _onNavTap,
+      ),
+    );
+  }
+
+  Widget _buildBody() {
+    if (_currentIndex == 0) {
+      // Home tab
+      return SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Welcome Card
+            _buildSectionContainer(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Welcome Back!',
+                    style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Hello, ${widget.user.name}',
+                    style: const TextStyle(color: Colors.white, fontSize: 18),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    widget.user.email,
+                    style: const TextStyle(color: AppColors.lightGray, fontSize: 14),
+                  ),
+                  if (_ownerData != null) ...[
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: (_ownerData!.status == 'pending' ? AppColors.primaryOrange : Colors.green).withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        'Status: ${_ownerData!.status.toUpperCase()}',
+                        style: TextStyle(
+                          color: _ownerData!.status == 'pending' ? AppColors.primaryOrange : Colors.green,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // Owner Information Card
+            if (_ownerData != null)
               _buildSectionContainer(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'Welcome Back!',
-                      style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
+                      'Provider Information',
+                      style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Hello, ${widget.user.name}',
-                      style: const TextStyle(color: Colors.white, fontSize: 18),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      widget.user.email,
-                      style: const TextStyle(color: AppColors.lightGray, fontSize: 14),
-                    ),
-                    if (_ownerData != null) ...[
-                      const SizedBox(height: 12),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                        decoration: BoxDecoration(
-                          color: (_ownerData!.status == 'pending' ? AppColors.primaryOrange : Colors.green).withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          'Status: ${_ownerData!.status.toUpperCase()}',
-                          style: TextStyle(
-                            color: _ownerData!.status == 'pending' ? AppColors.primaryOrange : Colors.green,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ),
-                    ],
+                    const Divider(color: AppColors.mediumGray, height: 24),
+                    _InfoRow('User ID:', _ownerData!.userId),
+                    _InfoRow('Email:', _ownerData!.email),
+                    _InfoRow('Name:', _ownerData!.name),
+                    _InfoRow('Phone:', _ownerData!.phoneNumber ?? 'Not provided'),
+                    _InfoRow('Role:', _ownerData!.role),
+                    _InfoRow('Plan:', _ownerData!.plan),
+                    _InfoRow('KYC Status:', _ownerData!.kycStatus),
+                    _InfoRow('Account Status:', _ownerData!.status),
+                    _InfoRow('Profile Complete:', _ownerData!.isProfileCompleted ? 'Yes' : 'No'),
+                    _InfoRow('Created:', _formatDate(_ownerData!.createdAt.toIso8601String())),
                   ],
                 ),
               ),
-              const SizedBox(height: 24),
 
-              // Owner Information Card
-              if (_ownerData != null)
-                _buildSectionContainer(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Provider Information',
-                        style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                      const Divider(color: AppColors.mediumGray, height: 24),
-                      _InfoRow('User ID:', _ownerData!.userId),
-                      _InfoRow('Email:', _ownerData!.email),
-                      _InfoRow('Name:', _ownerData!.name),
-                      _InfoRow('Phone:', _ownerData!.phoneNumber ?? 'Not provided'),
-                      _InfoRow('Role:', _ownerData!.role),
-                      _InfoRow('Plan:', _ownerData!.plan),
-                      _InfoRow('KYC Status:', _ownerData!.kycStatus),
-                      _InfoRow('Account Status:', _ownerData!.status),
-                      _InfoRow('Profile Complete:', _ownerData!.isProfileCompleted ? 'Yes' : 'No'),
-                      _InfoRow('Created:', _formatDate(_ownerData!.createdAt.toIso8601String())),
-                    ],
-                  ),
+            const SizedBox(height: 24),
+
+            // Machinery Section
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'My Machinery (${_machineryList.length})',
+                  style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
                 ),
-
-              const SizedBox(height: 24),
-
-              // Machinery Section
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'My Machinery (${_machineryList.length})',
-                    style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  ElevatedButton.icon(
-                    onPressed: _showAddMachineryDialog,
-                    icon: const Icon(Icons.add, size: 18),
-                    label: const Text('Add Machine'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primaryOrange,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
+                ElevatedButton.icon(
+                  onPressed: _navigateToAddMachinery,
+                  icon: const Icon(Icons.add, size: 18),
+                  label: const Text('Add Machine'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primaryOrange,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                ],
-              ),
-              const SizedBox(height: 16),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
 
-              // Machinery List
-              if (_machineryList.isEmpty)
-                _buildEmptyState()
-              else
-                ..._machineryList.map((machinery) => _buildMachineryCard(machinery)),
-            ],
-          ),
+            // Machinery List
+            if (_machineryList.isEmpty)
+              _buildEmptyState()
+            else
+              ..._machineryList.map((machinery) => _buildMachineryCard(machinery)),
+          ],
         ),
-      ),
-    );
+      );
+    } else {
+      // Placeholder for other tabs
+      return Center(
+        child: Text(
+          _currentIndex == 1
+              ? 'My Listings (Coming Soon)'
+              : _currentIndex == 2
+                  ? 'Chat (Coming Soon)'
+                  : 'Settings (Coming Soon)',
+          style: const TextStyle(color: AppColors.lightGray, fontSize: 18),
+        ),
+      );
+    }
   }
 
   Widget _buildSectionContainer({required Widget child}) {
@@ -340,48 +374,11 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  void _showAddMachineryDialog() {
-    // This logic remains unchanged
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: AppColors.surface,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          title: const Text('Add New Machine', style: TextStyle(color: Colors.white)),
-          content: const SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Machine listing form will be implemented here.',
-                  style: TextStyle(fontSize: 16, color: AppColors.lightGray),
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel', style: TextStyle(color: AppColors.lightGray)),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Machine listing feature is coming soon!'),
-                    backgroundColor: AppColors.primaryOrange,
-                  ),
-                );
-              },
-              style: ElevatedButton.styleFrom(backgroundColor: AppColors.primaryOrange),
-              child: const Text('Coming Soon', style: TextStyle(color: Colors.white)),
-            ),
-          ],
-        );
-      },
+  void _navigateToAddMachinery() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => const AddMachineryPage(),
+      ),
     );
   }
 
